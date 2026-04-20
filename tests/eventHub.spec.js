@@ -51,12 +51,6 @@ test('Navigate to Event Hub page and book an event',async ({page}) => {
     await page.pause();
   
 
-
-
-
-
-
-
 });
 
 
@@ -87,12 +81,13 @@ test.only('Navigate to child window',async ({browser})=>
         context.waitForEvent('page'),
         await linkForNavigation.click(),
     ])
-
-
     const newPageVerification = newPage.locator("//span[contains(text(),'Learn & Shine')]");
     const pageName = await newPageVerification.textContent();
-    console.log("pageName:",pageName)
-    ;
+    console.log("pageName:",pageName);
+
+    // Navigate back to parent window
+    await parentPage.bringToFront(); 
+     
 
 
 

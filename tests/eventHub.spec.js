@@ -3,7 +3,7 @@ import { test, expect} from '@playwright/test';
     
     
 
-test('Navigate to Event Hub page and book an event',async ({page}) => {
+test.only('Navigate to Event Hub page and book an event',async ({page}) => {
     const userName = page.locator("//input[@id='email']");
     const password = page.locator("//input[@id='password']");
     const signInBtn = page.locator("//button[@id='login-btn']");
@@ -19,16 +19,72 @@ test('Navigate to Event Hub page and book an event',async ({page}) => {
     const eventTab  = page.locator("//a[@id='nav-events']");
     const select = page.locator("//select");
     const linkForNavigation = page.locator("//a[contains(text(),'Selenium WebDriver with Java')]");
+    const adminDrpDwn = page.getByText("Admin");
+    const navToAdmin = page.locator("a[href='/admin/events']");
+    const eventTitle = page.getByPlaceholder("Event title");
+    const evenmtTitleDes = page.getByPlaceholder("Describe the event…");
+    const selectCatagory = page.locator("select[id='category']");
+    const inputCity = page.locator("input[id='city']");
+    const venue = page.getByPlaceholder("Venue name & address");
+    const date = page.locator("input[id='event-date-&-time']");
+    const price = page.getByPlaceholder("0.00");
+    const totalSeat = page.locator("input[id='total-seats']");
+    const addEventBtn = page.locator("button[id='add-event-btn']");
+    const deleteEvent = page.locator("button[id='delete-event-btn']");
+    const cnfDelete = page.locator("button[id='confirm-dialog-yes']");
+    const navHomeBtn = page.locator("a[id='nav-home']");
+
+
 
     const url = "https://eventhub.rahulshettyacademy.com/";
     
+    // Step 1
     // Navigate to URL and login
-   
-    await browseEvents.click();
-    await eventTitles.last().waitFor();
-    const eventTitle = await eventTitles.allTextContents();
 
-    console.log('eventTitle::',eventTitle);
+    await page.goto(url);
+    await userName.fill('san8784@gmail.com');
+    await password.fill('Sandeep@123');
+    await signInBtn.click();
+    expect (await browseEvents.isVisible());
+   
+    // Step 2 
+    // Create a new event
+    // Navigate to admin page
+    await adminDrpDwn.click();
+    await navToAdmin.first().click();
+
+    // Fill event details
+    const  eventTitleText = "AutomatedEvent";
+    await eventTitle.fill(eventTitleText);
+    await evenmtTitleDes.fill("event is added via Automation");
+    await selectCatagory.selectOption('Sports');
+    await inputCity.fill("Hyderabad");
+    await venue.fill("Automation &Hyerabad,Telangana");
+    
+    const currentDate = await getCurrentTimeAndDate();
+    console.log("currentDate::",currentDate);
+    const arr = currentDate.split(" ");
+    await date.pressSequentially(arr[0], {delay: 150});
+    await date.press('Tab');        
+    await date.pressSequentially(arr[1] + arr[2], {delay: 150});
+
+    await price.fill("1000");
+    await totalSeat.fill("15");
+    await addEventBtn.click();
+
+    // Delete the event
+    await adminDrpDwn.click();
+    await navToAdmin.first().click();
+    await deleteEvent.last().click();
+    await cnfDelete.click();
+    await page.pause();
+    await navHomeBtn.click();
+    expect (await browseEvents.isVisible());
+    await browseEvents.click();
+    // await eventTitles.last().waitFor();
+    // const eventTitle = await eventTitles.allTextContents();
+
+    // console.log('eventTitle::',eventTitle);
 
     //click on Book Now for the event maches the text "Dilli Diwali Mela"
     const index = eventTitle.indexOf('Dilli Diwali Mela');
@@ -48,15 +104,31 @@ test('Navigate to Event Hub page and book an event',async ({page}) => {
     await eventTab.click();
     await select.first().selectOption("Festival");
     await select.last().selectOption("Hyderabad");
-    await page.pause();
+   
   
 
 });
 
+async function getCurrentTimeAndDate(){
+        const now = new Date();
+        const year = now.getFullYear();
+
+        now.setMonth(now.getMonth()+1);
+        const month = String(now.getMonth() +1).padStart(2,"0");
+        const day = String(now.getDate()).padStart(2,"0");
+
+        let hours = now.getHours();
+        const min = String(now.getMinutes()).padStart(2, "0");
+
+        const amPm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12;
+        hours = String(hours).padStart(2, "0");
+        
+        return `${month}-${day}-${year} ${hours}:${min} ${amPm}`;
+}
 
 
-
-test.only('Navigate to child window',async ({browser})=>
+test('Navigate to child window',async ({browser})=>
 {
     const context= await browser.newContext();
     const page = await context.newPage();
@@ -81,6 +153,7 @@ test.only('Navigate to child window',async ({browser})=>
         context.waitForEvent('page'),
         await linkForNavigation.click(),
     ])
+    
     const newPageVerification = newPage.locator("//span[contains(text(),'Learn & Shine')]");
     const pageName = await newPageVerification.textContent();
     console.log("pageName:",pageName);

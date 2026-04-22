@@ -3,6 +3,8 @@ import { test, expect } from '@playwright/test';
 
 test('land on flipcart page', async ({ page }) => {
 
+// https://eventhub.rahulshettyacademy.com/login
+
   const url = "https://www.flipkart.com/";
   const searchInput = page.locator("input[title*='Search for Products']");
   const submitSearch = page.locator("button[type='submit']");

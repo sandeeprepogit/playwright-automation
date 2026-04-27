@@ -33,12 +33,13 @@ test.only('Navigate to Event Hub page and book an event',async ({page}) => {
     const deleteEvent = page.locator("button[id='delete-event-btn']");
     const cnfDelete = page.locator("button[id='confirm-dialog-yes']");
     const navHomeBtn = page.locator("a[id='nav-home']");
+    const tckAvaCheck = page.locator("//p[normalize-space()='Available']/following-sibling::p/span");
 
 
 
     const url = "https://eventhub.rahulshettyacademy.com/";
     
-    // Step 1
+    // Step 1[Login]
     // Navigate to URL and login
 
     await page.goto(url);
@@ -47,8 +48,7 @@ test.only('Navigate to Event Hub page and book an event',async ({page}) => {
     await signInBtn.click();
     expect (await browseEvents.isVisible());
    
-    // Step 2 
-    // Create a new event
+    // Step 2[Create a new event] 
     // Navigate to admin page
     await adminDrpDwn.click();
     await navToAdmin.first().click();
@@ -77,37 +77,62 @@ test.only('Navigate to Event Hub page and book an event',async ({page}) => {
     await navToAdmin.first().click();
     await deleteEvent.last().click();
     await cnfDelete.click();
-    await page.pause();
     await navHomeBtn.click();
     expect (await browseEvents.isVisible());
+
+    // Step-3[Find the event which got creted and capture seat]
     await browseEvents.click();
-    // await eventTitles.last().waitFor();
-    // const eventTitle = await eventTitles.allTextContents();
-
-    // console.log('eventTitle::',eventTitle);
-
-    //click on Book Now for the event maches the text "Dilli Diwali Mela"
-    const index = eventTitle.indexOf('Dilli Diwali Mela');
+    await eventTitles.last().waitFor();
+    const eventTitleTexts = await eventTitles.allTextContents();
+    console.log('eventTitleTexts::',eventTitleTexts);
+    const index = eventTitleTexts.indexOf(eventTitleText);
     await bookNowBtn.nth(index).click();
+    const currentAvalable = await tckAvaCheck.textContent();
+    console.log(`Before booking: ${currentAvalable}`);
+    const beforeCount = extractAvailableSeats(currentAvalable);
 
-    // Fill the form and click on confirm booking
+    // Step-5[Fill bokking form]
     await customerName.fill('Sandeep Sharma');
     await customerEmail.fill('san8784@gmail.com');
     await customerPhone.fill('9533365352');
     await increateTicket.click();
     await confirmBooking.click();
 
+    // Step-6[Verify booking confirmation]
     const bookingConfirmationText = await bookingConfirmation.textContent();
     console.log('bookingConfirmationText::',bookingConfirmationText)
 
-    // Navigate to Event tab and check drop downs 
-    await eventTab.click();
-    await select.first().selectOption("Festival");
-    await select.last().selectOption("Hyderabad");
+    // Step-8[Verify seat reduction]
+    const afterBookAvalable = await tckAvaCheck.textContent();
+    console.log(`After booking: ${afterBookAvalable}`);
+    const afterCount = extractAvailableSeats(afterBookAvalable);
+
+    const seatAvailable = beforeCount - afterCount;
+    console.log(`Available seats after: ${afterCount}`);
+  
+    const isReduced = (beforeCount - afterCount) === 1;
+    if (isReduced) {
+       console.log(`Seat count reduced from ${beforeCount} to ${afterCount}`);
+       return true;
+    } else {
+       console.error(`Expected ${beforeCount - 1}, but got ${afterCount}`);
+       return false;
+    }
+
+    // //Navigate to Event tab and check drop downs 
+    // await eventTab.click();
+    // await select.first().selectOption("Festival");
+    // await select.last().selectOption("Hyderabad");
    
   
 
 });
+
+async function extractAvailableSeats(seatText) {
+  // Extract the number before the "/"
+  const match = seatText.match(/(\d+)\s*\/\s*\d+/);
+  return match ? parseInt(match[1]) : null;
+}
 
 async function getCurrentTimeAndDate(){
         const now = new Date();

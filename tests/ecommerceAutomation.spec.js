@@ -35,18 +35,20 @@ test('Navigate to RahulSetty Academy page',async ({page}) => {
     await password.fill('Sandeep@123');
     await signInBtn.click();
 
+    // Add items to the cart
     await addToCartBtn.first().click();
     await navTocart.click();
     const myCartText = await myCartDash.textContent();
     expect (myCartText.includes('My Cart')).toBeTruthy();
 
     await checkoutBtn.click();
-
+    // Add card details
     await cvvCode.fill("123");
     await nameOnCard.fill("Sandeep");
     await country.pressSequentially("ind", {delay: 150})
     await dropDownSelectCountry.waitFor();
     const optionCount = await dropDownSelectCountry.locator("button").count();
+    // Select INDIA using for loop
     for(let i = 0; i< optionCount; i++){
         const text = await dropDownSelectCountry.locator("button").nth(i).textContent();
         if(text == " India"){
@@ -55,7 +57,7 @@ test('Navigate to RahulSetty Academy page',async ({page}) => {
         }
 
     }
-
+    // Place order and capture order id
     await placeOrder.click();
 
     const confirmOrder = await confirmationText.textContent();

@@ -117,7 +117,12 @@ test.only('Navigate to Event Hub page and book an event',async ({page}) => {
     } else {
        console.error(`Expected ${beforeCount - 1}, but got ${afterCount}`);
        return false;
-    }
+    }                       2222222222222222222222222222222222 
+
+
+
+
+    
 
     // //Navigate to Event tab and check drop downs 
     // await eventTab.click();
